@@ -1,0 +1,94 @@
+name: Code Styling
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  style-check:
+    name: Style
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Prepare Package Managers
+      run: |
+        sudo apt-get update
+        python -m pip install --upgrade pip
+
+    - name: Install Shell Checkers
+      run: |
+        sudo apt-get install -y shellcheck
+
+    - name: Run ShellCheck
+      run: |
+        find . -name "*.sh" -type f | while read f; do
+          shellcheck "$f" || exit 1
+        done
+
+    - name: Install Python Checkers
+      run: |
+        pip install ruff
+        pip install black
+        pip install pylint
+        pip install pyright
+
+    - name: Install SQLFluff
+      run: |
+        pip install sqlfluff
+
+    - name: Run SQLFluff
+      run: |
+        find . -name "*.sql" -type f | while read f; do
+          sqlfluff lint "$f" --dialect postgres
+        done
+
+    - name: Compile Python
+      run: |
+        find . -name "*.py" -type f | while read f; do
+          python -m py_compile "$f" || exit 1
+        done
+
+    - name: Run Ruff
+      run: |
+        ruff check .
+
+    - name: Run Pylint
+      run: |
+        VT_PYLINT_DISABLE="missing-module-docstring"
+        VT_PYLINT_DISABLE="missing-function-docstring,$VT_PYLINT_DISABLE"
+        VT_PYLINT_DISABLE="missing-class-docstring,$VT_PYLINT_DISABLE"
+        pylint . --disable="$VT_PYLINT_DISABLE"
+
+    - name: Run Black
+      run: |
+        black --check .
+
+    - name: Run Pyright
+      run: |
+        pyright .
+
+    - name: Install Markdown Checkers
+      run: |
+        npm install -g markdownlint-cli
+
+    - name: Run Markdown Lint
+      run: |
+        find . -name "*.md" -type f | while read f; do
+          markdownlint "$f" || exit 1
+        done
+
+    - name: Install Typst
+      run: |
+        sudo snap install typst
+
+    - name: Compile Typst
+      run: |
+        find . -name "report" -type d | while read r; do
+          if find "$r" -name "*.typ" -type f | grep -q .; then
+            (cd "$r" && typst compile main.typ)
+          fi
+        done
