@@ -1,0 +1,1 @@
+initdb -D ../ajm59 -E UTF8 --locale=en_US.UTF-8
