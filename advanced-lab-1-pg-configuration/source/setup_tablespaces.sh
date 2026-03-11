@@ -47,27 +47,35 @@ psql -h localhost -p 9476 -d fatredexam -U labuser <<EOF
 CREATE TEMPORARY TABLE sales (
     id SERIAL,
     amount INT
-);
+) TABLESPACE hit89;
 
 CREATE TEMPORARY TABLE customers (
     id SERIAL,
     name TEXT
-);
+) TABLESPACE tdg81;
 
 CREATE TEMPORARY TABLE products (
     id SERIAL,
     name TEXT
-);
+) TABLESPACE hit89;
 
 INSERT INTO sales (amount) VALUES (100), (250), (500);
 INSERT INTO customers (name) VALUES ('Ivan'), ('Anna'), ('Petr');
 INSERT INTO products (name) VALUES ('Phone'), ('Laptop'), ('Tablet');
 
 \echo ''
-\echo 'Таблицы и их tablespace:'
-SELECT tablename, tablespace
+\echo 'Временные таблицы и их tablespace:'
+SELECT schemaname, tablename, tablespace
 FROM pg_tables
-WHERE schemaname = 'public';
+WHERE schemaname LIKE 'pg_temp%';
+
+EOF
+
+echo "Вывод списка всех табличных пространств кластера..."
+
+psql -p 9476 -d fatredexam <<EOF
+
+\db+
 
 EOF
 
