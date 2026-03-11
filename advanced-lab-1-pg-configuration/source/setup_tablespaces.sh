@@ -27,8 +27,6 @@ GRANT CONNECT ON DATABASE fatredexam TO labuser;
 GRANT CREATE ON TABLESPACE hit89 TO labuser;
 GRANT CREATE ON TABLESPACE tdg81 TO labuser;
 
-ALTER ROLE labuser SET temp_tablespaces = 'hit89,tdg81';
-
 EOF
 
 echo "Настройка прав на схему public..."
@@ -44,19 +42,19 @@ EOF
 
 echo "Создание таблиц и данных от имени labuser..."
 
-psql -p 9476 -d fatredexam -U labuser <<EOF
+psql -h localhost -p 9476 -d fatredexam -U labuser <<EOF
 
-CREATE TABLE sales (
+CREATE TEMPORARY TABLE sales (
     id SERIAL,
     amount INT
-) TABLESPACE hit89;
+);
 
-CREATE TABLE customers (
+CREATE TEMPORARY TABLE customers (
     id SERIAL,
     name TEXT
-) TABLESPACE tdg81;
+);
 
-CREATE TABLE products (
+CREATE TEMPORARY TABLE products (
     id SERIAL,
     name TEXT
 );
